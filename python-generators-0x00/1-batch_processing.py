@@ -3,11 +3,13 @@ import mysql.connector
 
 def stream_users_in_batches(batch_size):
     """Generator that fetches rows in batches and yields one user at a time."""
+    connection = None
+    cursor = None
     try:
         connection = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="your_password",  # replace with your actual MySQL password
+            password="your_password",  # ← Replace with your actual password
             database="ALX_prodev"
         )
         cursor = connection.cursor(dictionary=True)
@@ -21,7 +23,7 @@ def stream_users_in_batches(batch_size):
                 yield user
 
     except mysql.connector.Error as err:
-        print(f"Database error: {err}")
+        print(f"Error: {err}")
     finally:
         if cursor:
             cursor.close()
@@ -29,7 +31,7 @@ def stream_users_in_batches(batch_size):
             connection.close()
 
 def batch_processing(batch_size):
-    """Processes users by filtering those older than 25 and prints them."""
+    """Process and print users over the age of 25."""
     for user in stream_users_in_batches(batch_size):
         if user['age'] > 25:
             print(user)
