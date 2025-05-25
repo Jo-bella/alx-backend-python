@@ -1,37 +1,31 @@
-#!/usr/bin/python3
 import mysql.connector
 
 def stream_users_in_batches(batch_size):
-    """Generator that fetches rows in batches and yields one user at a time."""
-    connection = None
-    cursor = None
-    try:
-        connection = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="your_password",  # ← Replace with your actual password
-            database="ALX_prodev"
-        )
-        cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM user_data")
+    """Fetches all users in batches and returns them as a flat list (not a generator)."""
+    connection = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="your_password",  # Replace with actual password
+        database="ALX_prodev"
+    )
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM user_data")
 
-        while True:
-            batch = cursor.fetchmany(batch_size)
-            if not batch:
-                break
-            for user in batch:
-                yield user
+    users = []
+    while True:
+        batch = cursor.fetchmany(batch_size)
+        if not batch:
+            break
+        users.extend(batch)
 
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
-    finally:
-        if cursor:
-            cursor.close()
-        if connection:
-            connection.close()
+    cursor.close()
+    connection.close()
+    return users  # This is a return, not a generator
 
 def batch_processing(batch_size):
-    """Process and print users over the age of 25."""
+    """Processes and returns all users over age 25."""
+    filtered = []
     for user in stream_users_in_batches(batch_size):
         if user['age'] > 25:
-            print(user)
+            filtered.append(user)
+    return filtered
